@@ -1,7 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Dashboard() {
+
+    const [multipleWinners, setMultipleWinners]= useState();
+    const [studiosWinners, setStudiosWinners]= useState();
+    const [searchWinners, setSearchWinners]= useState();
+    const [producersMax, setProducersMax]= useState();
+    const [producersMin, setProducersMin]= useState();
+
+    const getMultipleWinners=async()=>{
+        try{
+          const req= await fetch("http://localhost:8000/api/films/filter/winners");
+          const res= await req.json();
+          setMultipleWinners(res);
+      
+        } catch(error){
+        console.log(error);
+        }
+    }
+    
+    const getStudiosWinners=async()=>{
+        try{
+          const req= await fetch("http://localhost:8000/api/films/filter/studios");
+          const res= await req.json();
+          setStudiosWinners(res);
+        //   console.log(res);
+        } catch(error){
+            console.log(error);
+        }
+    }
+
+    const getProducersWinners=async()=>{
+        try{
+          const req= await fetch("http://localhost:8000/api/films/filter/interval");
+          const res= await req.json();
+      
+          let max = Object.values(res);
+          max.splice(0, 1)[0]
+
+          let min = Object.values(res);
+          min.splice(1, 1)[0]
+        
+          setProducersMax(max);
+          setProducersMin(min);
+      
+        } catch(error){
+            console.log(error);
+        }
+    }
+
+    const onSearchForm =async(e)=> {
+       
+        e.preventDefault();
+        var searchYear = e.target.year.value;
+
+        try{
+            const req= await fetch("http://localhost:8000/api/films/filter/year?winner=true&year="+searchYear+"");
+            const res= await req.json();
+            setSearchWinners(res)
+        } catch(error){
+            console.log(error);
+        }
+    }
+
+    useEffect(()=>{
+  
+        getMultipleWinners();
+        getStudiosWinners();
+        getProducersWinners();
+      }, []);
+
     return (
       <div className='container'>
         <div className='row'>
@@ -19,20 +88,12 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">1986</th>
-                                    <td>2</td>
-                                
+                              {multipleWinners && multipleWinners.year.map((item, index) => (
+                                    <tr key={index}>
+                                    <th scope="row">{item.year}</th>
+                                    <td>{item.total}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">1990</th>
-                                    <td>2</td>
-                                   
-                                </tr>
-                                <tr>
-                                    <th scope="row">2015</th>
-                                    <td colspan="2">2</td>
-                                </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -52,20 +113,13 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">Columbia Pictures</th>
-                                    <td>2</td>
-                                
+                                {studiosWinners && studiosWinners.studios.map((item, index) => (
+                                    <tr key={index}>
+                                    <th scope="row">{item.studios}</th>
+                                    <td>{item.total}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Paramount Pictures</th>
-                                    <td>2</td>
-                                   
-                                </tr>
-                                <tr>
-                                    <th scope="row">Warner Bros.</th>
-                                    <td colspan="2">2</td>
-                                </tr>
+                                ))}
+                               
                             </tbody>
                         </table>
                     </div>
@@ -74,7 +128,7 @@ function Dashboard() {
             </div>
             <div className='col-md-12 col-xl-6'>
                 <article className='painel-card'>
-                    <h1>Producers with longest ans shortest interval between wins</h1>
+                    <h1>Producers with longest and shortest interval between wins</h1>
                     
                     <div className="content-table">
                         <p>Maximum</p>
@@ -88,21 +142,14 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">Matthew Vaughn</th>
-                                    <td>13</td>
-                                    <td>2002</td>
-                                    <td>2015</td>
-                                
+                                { producersMax && producersMax.map((item, index) => (
+                                    <tr key={index}>
+                                    <th scope="row">{item.producers}</th>
+                                    <td>{item.interval}</td>
+                                    <td>{item.previousWin}</td>
+                                    <td>{item.followingWin}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Martin Lee</th>
-                                    <td>13</td>
-                                    <td>2002</td>
-                                    <td>2015</td>
-                                
-                                </tr>
-                                
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -119,21 +166,16 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">Joel Silver</th>
-                                    <td>1</td>
-                                    <td>1993</td>
-                                    <td>1996</td>
-                                
+                            { producersMin && producersMin.map((item, index) => (
+                                    <tr key={index}>
+                                    <th scope="row">{item.producers}</th>
+                                    <td>{item.interval}</td>
+                                    <td>{item.previousWin}</td>
+                                    <td>{item.followingWin}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Away Brow</th>
-                                    <td>1</td>
-                                    <td>1990</td>
-                                    <td>1991</td>
-                                
-                                </tr>
-                                
+                                ))}
+                               
+                            
                             </tbody>
                         </table>
                     </div>
@@ -144,7 +186,7 @@ function Dashboard() {
                 <article className='painel-card'>
                     <h1>List movie winners by year</h1>
                     
-                    <form action="">
+                    <form onSubmit={onSearchForm}>
 
                         <input type="number" placeholder="Search by year" name="year"/>
                         <button className='btn btn-primary'>
@@ -153,7 +195,7 @@ function Dashboard() {
                     </form>
 
                     <div className="content-table">
-                        <p>Minimum</p>
+                        
                         <table className="table table-striped table-bordered">
                             <thead>
                                 <tr>
@@ -163,16 +205,14 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">1</th>
-                                    <td>1995</td>
-                                    <td>lorem ipsum</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>1960</td>
-                                    <td>lorem ipsum</td>
-                                </tr>
+                                {searchWinners && searchWinners.map((item, index) => (
+                                    <tr key={index}>
+                                        <th scope="row">{item.id}</th>
+                                        <td>{item.year}</td>
+                                        <td>{item.title}</td>
+                                    </tr>
+                                ))}
+                               
                                 
                             </tbody>
                         </table>
