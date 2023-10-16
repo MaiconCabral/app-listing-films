@@ -23,66 +23,46 @@ function List() {
   
   ];
 
-  const movies = [
-    {
-        id: 1,
-        year: "1980",
-        title: "Can't stop the Music",
-        winner: "Yes",
-    },
-    {
-      id: 2,
-      year: "1981",
-      title: "Cruising",
-      winner: "No",
-    },
-    {
-      id: 3,
-      year: "1982",
-      title: "Xanadu",
-      winner: "Yes",
-    },
-    {
-      id: 4,
-      year: "1981",
-      title: "Endless Love",
-      winner: "No",
-    },
-    {
-      id: 5,
-      year: "1990",
-      title: "Tarzan, the Ape man",
-      winner: "No",
-    },
-]
-
   const [data, setData]= useState([]);
   const [search, SetSearch]= useState('');
+  const [winner, SetWinner]= useState('');
   const [filter, setFilter]= useState([]);
   
-  const getProduct=async()=>{
-  try{
-    const req= await fetch("https://fakestoreapi.com/products");
-    const res= await req.json();
-    setData(res);
-    setFilter(res);
-  } catch(error){
-   console.log(error);
+  const getMovies=async()=>{
+    try{
+      const req= await fetch("http://localhost:8000/api/films/all");
+      const res= await req.json();
+      setData(res);
+      setFilter(res);
+    } catch(error){
+    console.log(error);
+    }
   }
-  }
+ 
+
   useEffect(()=>{
-    getProduct();
+  
+    getMovies();
   }, []);
   
   useEffect(()=>{
-    const result= data.filter((item)=>{
-     return item.title.toLowerCase().match(search.toLocaleLowerCase());
+    const result = data.filter((item)=>{
+      return item.year.toLowerCase().match(search.toLocaleLowerCase());
     });
+    
     setFilter(result);
+
   },[search]);
   
+  const handleWinners=(val)=>{
+    const win = data.filter((item)=>{
+      return item.winner  == val;
+    });
+    setFilter(win);
+   }
+
   const handleDelete=(val)=>{
-  const newdata= data.filter((item)=>item.id!==val);
+  const newdata = data.filter((item)=>item.id!==val);
   setFilter(newdata);
   }
   
@@ -91,7 +71,7 @@ function List() {
     style:{
         fontWeight:"bold",
         fontSize:"14px",
-        backgroundColor:"#ccc"
+        backgroundColor:"#f8f9fa"
   
     },
   },
@@ -100,19 +80,18 @@ function List() {
   return (
     <div className='container'>
       <div className='row'>
-        <h1>View List</h1>
-
+      
         <div className='col-md-12 col-xl-12'>
                 <article className="painel-card">
-                    <h1>List years with multiple winners</h1>
+                  
 
                     <div className="content-table">
                          <React.Fragment>
-                            <h1>Product List</h1>
+                            <h1>List Movies</h1>
                             <DataTable 
                             customStyles={ tableHeaderstyle}
                             columns={columns}
-                            data={movies}
+                            data={filter}
                             pagination
                             fixedHeader
                             selectableRowsHighlight
@@ -126,6 +105,15 @@ function List() {
                                 onChange={(e)=>SetSearch(e.target.value)}
                                 
                                 />
+                            }
+                            actions={
+                              <div>
+                                <select className="form-select" value={winner} aria-label="Default select example" onChange={(e)=>handleWinners(e.target.value)}>
+                                  <option selected>Yes/No</option>
+                                  <option value="yes">Yes</option>
+                                  <option value="no">No</option>
+                                </select>
+                              </div>
                             }
                             subHeaderAlign="right"
                             
